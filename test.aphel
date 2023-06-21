@@ -1,0 +1,80 @@
+//testing to make sure that everything works
+
+/*
+lookup table for errors:
+
+rk = err, use -debug:1 on launch
+rj = pc at error
+
+err | meaning
+----+------------------------
+001 | illegal opcode failure
+002 | arithmetic error
+*/
+
+
+.loc 0xA00
+
+
+bra start
+bra illop //at 0xA04
+
+start:
+	//if any of this fails, the boot rom will cause a boot loop as
+	//BRA is already implemented. its just gonna be a nasty to debug
+	//boot loop as it has the error code 0x0 and not 0x1
+
+
+	//copy fail jump into IVT entry 5 (invalid opcode)
+	lli ra, 0x0A04
+	st rz, ra, 0x0A04
+
+	//skipping LI, ST family of instructions as 
+	//they are tested by the build rom. i will however
+	//test them for illop
+	lli   rz, 0x0
+	llis  rz, 0x0   
+	lui   rz, 0x0   
+	luis  rz, 0x0  
+	lti   rz, 0x0   
+	ltis  rz, 0x0   
+	ltui  rz, 0x0   
+	ltuis rz, 0x0
+	ld    rz, rz, 0x0
+	lbs   rz, rz, 0x0
+	lb    rz, rz, 0x0
+	st    rz, rz, 0x1000
+	stb   rz, rz, 0x1000
+	swp   rz, rz
+
+	//arithmetic family of instructions
+	
+	// 1 + 1 = 2 (register)
+	// a = 1, b = 0
+	mov rj, pc 
+	lli ra, 0x1
+
+	addr rb, ra, ra
+	subr rb, rb, 0x0
+	bnz arithmetic
+
+	// a = 1, b = 0
+	// 1 + 1 = 2 (integer)
+	mov rj, pc 
+	addi rb, ra, 0x1
+	subi rb, ra, 0x0
+	bnz arithmetic
+
+
+
+
+illop:
+	ld rk, 0x1
+	bra illop
+
+arithmetic:
+	ld rk, 0x2
+	bra arithmetic
+
+failure:
+	bra failure

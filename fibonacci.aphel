@@ -1,0 +1,13 @@
+.loc 0xA00
+
+lli ra, 0
+lli rb, 1
+lli rc, 1
+
+loop:
+	addr ra, rb, rc
+	addr rc, rb, rz
+	addr rb, ra, rz
+	bra loop
+
+int 0
